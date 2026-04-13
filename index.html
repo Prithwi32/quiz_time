@@ -1,0 +1,2048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 AI Space Academy - Learning Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #000008;
+            min-height: 100vh;
+            color: #c8d8ff;
+            overflow-x: hidden;
+        }
+
+        /* ==================== SPACE CANVAS ==================== */
+        #spaceCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* ==================== SCANLINES ==================== */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg, transparent, transparent 2px,
+                rgba(0, 10, 30, 0.03) 2px, rgba(0, 10, 30, 0.03) 4px
+            );
+        }
+
+        /* ==================== VIGNETTE ==================== */
+        .vignette {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,10,0.7) 100%);
+        }
+
+        /* ==================== HUD BORDERS ==================== */
+        .hud-top, .hud-bottom {
+            position: fixed; left: 0; width: 100%; height: 2px; z-index: 15; pointer-events: none;
+        }
+        .hud-top {
+            top: 0;
+            background: linear-gradient(90deg, transparent 5%, rgba(0,200,255,0.3) 20%, rgba(0,200,255,0.6) 50%, rgba(0,200,255,0.3) 80%, transparent 95%);
+            box-shadow: 0 0 15px rgba(0,200,255,0.3);
+        }
+        .hud-bottom {
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 5%, rgba(120,50,255,0.3) 20%, rgba(120,50,255,0.6) 50%, rgba(120,50,255,0.3) 80%, transparent 95%);
+            box-shadow: 0 0 15px rgba(120,50,255,0.3);
+        }
+
+        /* ==================== WARP INDICATOR ==================== */
+        .warp-indicator {
+            position: fixed;
+            top: 18px; right: 20px;
+            z-index: 20;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.6em;
+            color: rgba(0,200,255,0.4);
+            letter-spacing: 2px;
+            text-align: right;
+        }
+        .warp-indicator .speed {
+            font-size: 1.8em;
+            color: #00ffc8;
+            text-shadow: 0 0 10px rgba(0,255,200,0.3);
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 25px 20px;
+            animation: ambientFlicker 8s infinite;
+        }
+
+        @keyframes ambientFlicker {
+            0%,95%,100% { opacity: 1; }
+            96% { opacity: 0.93; }
+            98% { opacity: 0.96; }
+        }
+
+        /* ==================== HEADER ==================== */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 25px 22px;
+            background: rgba(5,8,25,0.85);
+            border-radius: 4px;
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(0,180,255,0.12);
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 100%);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,200,255,0.5), rgba(120,50,255,0.5), transparent);
+        }
+
+        header::after {
+            content: '◆ MISSION CONTROL ◆';
+            position: absolute;
+            top: 6px; left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.55em;
+            color: rgba(0,200,255,0.35);
+            letter-spacing: 6px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2em;
+            font-weight: 800;
+            margin-bottom: 6px;
+            margin-top: 14px;
+            background: linear-gradient(135deg, #00d4ff, #00ff88, #00d4ff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientText 4s ease infinite;
+            letter-spacing: 2px;
+        }
+
+        @keyframes gradientText {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        header > p {
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1em;
+            color: rgba(0,200,255,0.45);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            font-size: 1em;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            background: rgba(0,200,255,0.04);
+            padding: 10px 22px;
+            border-radius: 2px;
+            font-weight: 600;
+            font-family: 'Exo 2', sans-serif;
+            border: 1px solid rgba(0,200,255,0.12);
+            color: rgba(180,220,255,0.7);
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        .score-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 3px; height: 100%;
+            background: linear-gradient(180deg, rgba(0,200,255,0.5), transparent);
+        }
+
+        .score-item span {
+            color: #00ffc8;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.03);
+            height: 4px;
+            border-radius: 0;
+            margin-top: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(0,200,255,0.08);
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #00ffc8, #00d4ff, #7b2fff);
+            background-size: 200% 100%;
+            height: 100%;
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+            animation: progressShift 3s ease infinite;
+            box-shadow: 0 0 10px rgba(0,255,200,0.3);
+        }
+
+        @keyframes progressShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ==================== GAMES GRID ==================== */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        /* ==================== GAME CARD ==================== */
+        .game-card {
+            background: rgba(5,8,25,0.85);
+            border-radius: 4px;
+            padding: 28px;
+            color: #c8d8ff;
+            box-shadow: 0 0 40px rgba(0,200,255,0.05);
+            transition: transform 0.3s ease;
+            position: relative;
+            border: 1px solid rgba(0,200,255,0.1);
+            backdrop-filter: blur(25px);
+            overflow: hidden;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #00ffc8, #00d4ff, transparent);
+            opacity: 0.5;
+        }
+
+        .game-card::after {
+            content: '';
+            position: absolute;
+            top: 8px; left: 8px;
+            width: 18px; height: 18px;
+            border-top: 2px solid rgba(0,255,200,0.3);
+            border-left: 2px solid rgba(0,255,200,0.3);
+            pointer-events: none;
+        }
+
+        .corner-br {
+            position: absolute;
+            bottom: 8px; right: 8px;
+            width: 18px; height: 18px;
+            border-bottom: 2px solid rgba(0,200,255,0.3);
+            border-right: 2px solid rgba(0,200,255,0.3);
+            pointer-events: none;
+        }
+
+        .game-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,200,255,0.1);
+        }
+
+        .game-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.15em;
+            font-weight: 700;
+            color: #00ffc8;
+            letter-spacing: 1px;
+            text-shadow: 0 0 15px rgba(0,255,200,0.2);
+        }
+
+        .game-status {
+            font-size: 2em;
+        }
+
+        /* ==================== DROP ZONES ==================== */
+        .drop-zone {
+            background: rgba(0,200,255,0.02);
+            border: 1px dashed rgba(0,200,255,0.15);
+            border-radius: 2px;
+            padding: 16px;
+            min-height: 120px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .drop-zone::before {
+            content: '[ DROP ZONE ]';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.6em;
+            color: rgba(0,200,255,0.12);
+            letter-spacing: 4px;
+            pointer-events: none;
+        }
+
+        .drop-zone:not(:empty)::before {
+            display: none;
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(0,255,200,0.05);
+            border-color: rgba(0,255,200,0.35);
+            box-shadow: 0 0 30px rgba(0,255,200,0.08), inset 0 0 30px rgba(0,255,200,0.02);
+        }
+
+        .drop-zone.correct {
+            background: rgba(0,255,100,0.05);
+            border-color: rgba(0,255,100,0.3);
+            border-style: solid;
+            box-shadow: 0 0 30px rgba(0,255,100,0.08);
+        }
+
+        .drop-zone.incorrect {
+            background: rgba(255,50,70,0.05);
+            border-color: rgba(255,50,70,0.3);
+            border-style: solid;
+            animation: shake 0.5s;
+            box-shadow: 0 0 30px rgba(255,50,70,0.08);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        /* ==================== CARDS CONTAINER ==================== */
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: rgba(0,200,255,0.02);
+            border-radius: 2px;
+            min-height: 80px;
+            border: 1px solid rgba(0,200,255,0.06);
+            position: relative;
+        }
+
+        .cards-container::before {
+            content: 'AVAILABLE MODULES';
+            position: absolute;
+            top: -8px; left: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.5em;
+            color: rgba(0,200,255,0.25);
+            letter-spacing: 3px;
+            background: rgba(5,8,25,0.9);
+            padding: 0 8px;
+        }
+
+        /* ==================== DRAGGABLE CARDS ==================== */
+        .card {
+            background: linear-gradient(135deg, rgba(0,255,200,0.08), rgba(0,150,255,0.06));
+            color: #b0e0ff;
+            padding: 12px 18px;
+            border-radius: 2px;
+            cursor: grab;
+            user-select: none;
+            font-weight: 600;
+            font-family: 'Exo 2', sans-serif;
+            box-shadow: 0 2px 10px rgba(0,200,255,0.08);
+            transition: all 0.25s ease;
+            font-size: 0.95em;
+            display: inline-block;
+            text-align: center;
+            border: 1px solid rgba(0,200,255,0.12);
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,255,200,0.12), 0 0 30px rgba(0,255,200,0.05);
+            border-color: rgba(0,255,200,0.3);
+            color: #ffffff;
+            background: linear-gradient(135deg, rgba(0,255,200,0.12), rgba(0,150,255,0.1));
+        }
+
+        .card:active { cursor: grabbing; }
+
+        .card.dragging {
+            opacity: 0.3;
+            transform: scale(0.9);
+        }
+
+        /* ==================== TWO COLUMN ==================== */
+        .two-column-game {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .column {
+            background: rgba(0,200,255,0.02);
+            padding: 15px;
+            border-radius: 2px;
+            border: 1px solid rgba(0,200,255,0.06);
+        }
+
+        .column-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+            color: rgba(0,200,255,0.6);
+            text-align: center;
+            padding: 10px;
+            background: rgba(0,200,255,0.04);
+            border-radius: 2px;
+            border: 1px solid rgba(0,200,255,0.08);
+            letter-spacing: 1px;
+        }
+
+        .column-drop-zone {
+            background: rgba(0,200,255,0.02);
+            border: 1px dashed rgba(0,200,255,0.12);
+            border-radius: 2px;
+            padding: 15px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .column-drop-zone.drag-over {
+            background: rgba(0,255,200,0.04);
+            border-color: rgba(0,255,200,0.3);
+            box-shadow: 0 0 25px rgba(0,255,200,0.06);
+        }
+
+        /* ==================== BUTTONS ==================== */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        button {
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0,255,200,0.06);
+            color: #00ffc8;
+            border: 1px solid rgba(0,255,200,0.2);
+            padding: 12px 30px;
+            border-radius: 2px;
+            font-size: 0.8em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0,255,200,0.05);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,255,200,0.06), transparent);
+            transition: left 0.4s ease;
+        }
+
+        button:hover::before { left: 100%; }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0,255,200,0.12);
+            border-color: rgba(0,255,200,0.4);
+            color: #ffffff;
+            background: rgba(0,255,200,0.1);
+        }
+
+        button:active { transform: translateY(0); }
+
+        button.reset-btn {
+            color: #ff6688;
+            border-color: rgba(255,80,100,0.2);
+            background: rgba(255,80,100,0.04);
+            box-shadow: 0 0 15px rgba(255,80,100,0.05);
+        }
+
+        button.reset-btn:hover {
+            box-shadow: 0 0 30px rgba(255,80,100,0.12);
+            border-color: rgba(255,80,100,0.4);
+            background: rgba(255,80,100,0.08);
+            color: #ffffff;
+        }
+
+        /* ==================== FEEDBACK ==================== */
+        .feedback {
+            text-align: center;
+            margin-top: 15px;
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1.05em;
+            font-weight: 700;
+            min-height: 30px;
+            padding: 10px;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .feedback.success {
+            background: rgba(0,255,100,0.06);
+            color: #00ff88;
+            border: 1px solid rgba(0,255,100,0.15);
+            box-shadow: 0 0 20px rgba(0,255,100,0.05);
+        }
+
+        .feedback.error {
+            background: rgba(255,50,70,0.06);
+            color: #ff5566;
+            border: 1px solid rgba(255,50,70,0.15);
+            box-shadow: 0 0 20px rgba(255,50,70,0.05);
+        }
+
+        /* ==================== CELEBRATION ==================== */
+        .celebration {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(5,8,25,0.95);
+            color: #00ffc8;
+            padding: 50px 70px;
+            border-radius: 4px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6em;
+            font-weight: 700;
+            box-shadow: 0 0 80px rgba(0,255,200,0.2), 0 0 150px rgba(0,255,200,0.05);
+            z-index: 1000;
+            animation: celebrationPop 0.5s ease;
+            display: none;
+            border: 1px solid rgba(0,255,200,0.25);
+            backdrop-filter: blur(30px);
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .celebration.show { display: block; }
+
+        @keyframes celebrationPop {
+            0% { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%,-50%) scale(1.05); }
+            100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+        }
+
+        /* ==================== GLOBAL CONTROLS ==================== */
+        .global-controls {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(5,8,25,0.6);
+            border-radius: 4px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0,200,255,0.06);
+        }
+
+        .global-controls button {
+            font-size: 0.9em;
+            padding: 15px 40px;
+        }
+
+        /* ==================== DICE SECTION ==================== */
+        .dice-section {
+            text-align: center;
+            margin-bottom: 35px;
+            padding: 40px 30px;
+            background: rgba(5,8,25,0.8);
+            border-radius: 4px;
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(0,200,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dice-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,255,200,0.4), transparent);
+        }
+
+        .dice-section::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(0,200,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,200,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .dice-instruction {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3em;
+            margin-bottom: 6px;
+            font-weight: 700;
+            color: #00ffc8;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .dice-section > p {
+            color: rgba(0,200,255,0.35);
+            font-size: 0.95em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-family: 'Exo 2', sans-serif;
+            position: relative;
+            z-index: 2;
+        }
+
+        .dice-container {
+            display: inline-block;
+            margin: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .dice {
+            width: 140px;
+            height: 140px;
+            background: rgba(5,10,30,0.9);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #00ffc8;
+            cursor: pointer;
+            box-shadow: 0 0 40px rgba(0,255,200,0.15), 0 0 80px rgba(0,255,200,0.05), inset 0 0 40px rgba(0,255,200,0.03);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(0,255,200,0.2);
+            font-family: 'Orbitron', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dice::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: conic-gradient(from 0deg, transparent, rgba(0,255,200,0.2), transparent, rgba(0,200,255,0.15), transparent);
+            animation: diceAura 3s linear infinite;
+            z-index: 0;
+        }
+
+        .dice::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px; right: 2px; bottom: 2px;
+            background: rgba(5,10,30,0.95);
+            border-radius: 2px;
+            z-index: 0;
+        }
+
+        @keyframes diceAura { to { transform: rotate(360deg); } }
+
+        .dice:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 0 60px rgba(0,255,200,0.25), 0 0 120px rgba(0,255,200,0.08);
+            border-color: rgba(0,255,200,0.4);
+        }
+
+        .dice.rolling {
+            animation: diceRoll 0.6s ease-in-out;
+        }
+
+        @keyframes diceRoll {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.2); }
+            50% { transform: rotate(180deg) scale(0.85); }
+            75% { transform: rotate(270deg) scale(1.2); }
+        }
+
+        #diceNumber {
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 25px rgba(0,255,200,0.5);
+        }
+
+        .selected-games {
+            margin-top: 25px;
+            font-size: 1.1em;
+            position: relative;
+            z-index: 2;
+        }
+
+        .game-selector-cards {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 22px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .game-selector-card {
+            background: rgba(0,255,200,0.04);
+            color: rgba(180,240,255,0.8);
+            padding: 20px 28px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            font-family: 'Exo 2', sans-serif;
+            box-shadow: 0 0 20px rgba(0,255,200,0.05);
+            transition: all 0.3s ease;
+            min-width: 220px;
+            text-align: center;
+            border: 1px solid rgba(0,255,200,0.12);
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-selector-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 3px; height: 100%;
+            background: linear-gradient(180deg, #00ffc8, transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .game-selector-card:hover:not(.completed)::before { opacity: 1; }
+
+        .game-selector-card:hover:not(.completed) {
+            transform: translateY(-4px);
+            box-shadow: 0 0 30px rgba(0,255,200,0.12);
+            border-color: rgba(0,255,200,0.3);
+            color: #ffffff;
+        }
+
+        .game-selector-card.completed {
+            background: rgba(0,255,100,0.06);
+            border-color: rgba(0,255,100,0.2);
+            cursor: default;
+            color: #00ff88;
+        }
+
+        .game-selector-card.completed::before {
+            opacity: 1;
+            background: linear-gradient(180deg, #00ff88, transparent);
+        }
+
+        .game-selector-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
+        }
+
+        /* ==================== QUESTION MODAL ==================== */
+        .question-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,10,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .question-modal.show { display: flex; }
+
+        .question-content {
+            background: rgba(5,8,25,0.95);
+            color: #c8d8ff;
+            padding: 40px;
+            border-radius: 4px;
+            max-width: 700px;
+            width: 90%;
+            box-shadow: 0 0 80px rgba(0,255,200,0.15);
+            border: 1px solid rgba(0,200,255,0.15);
+            backdrop-filter: blur(25px);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,200,255,0.1);
+        }
+
+        .question-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #00ffc8;
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-family: 'Exo 2', sans-serif;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background: rgba(0,200,255,0.04);
+            color: #b0d0ff;
+            padding: 16px 22px;
+            border-radius: 2px;
+            border: 1px solid rgba(0,200,255,0.12);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            font-family: 'Exo 2', sans-serif;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background: rgba(0,255,200,0.06);
+            transform: translateX(8px);
+            border-color: rgba(0,255,200,0.3);
+            color: #ffffff;
+        }
+
+        .option-btn.correct {
+            background: rgba(0,255,100,0.1);
+            color: #00ff88;
+            border-color: rgba(0,255,100,0.3);
+        }
+
+        .option-btn.incorrect {
+            background: rgba(255,50,70,0.1);
+            color: #ff5566;
+            border-color: rgba(255,50,70,0.3);
+            animation: shake 0.5s;
+        }
+
+        .option-btn:disabled { cursor: not-allowed; }
+
+        .question-feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 2px;
+            font-size: 1.05em;
+            font-weight: bold;
+            text-align: center;
+            font-family: 'Exo 2', sans-serif;
+        }
+
+        .next-question-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 14px;
+            font-size: 1em;
+        }
+
+        .games-grid.hidden { display: none; }
+
+        /* ==================== EXIT BUTTON ==================== */
+        .exit-game-btn {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: rgba(255,50,70,0.06);
+            color: #ff6680;
+            border: 1px solid rgba(255,80,100,0.2);
+            padding: 8px 18px;
+            border-radius: 2px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7em;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,50,70,0.05);
+            z-index: 100;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .exit-game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(255,50,70,0.15);
+            color: #ffffff;
+            border-color: rgba(255,80,100,0.4);
+        }
+
+        /* ==================== TIMER ==================== */
+        .game-timer-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 14px 20px;
+            background: rgba(0,200,255,0.03);
+            border-radius: 2px;
+            border: 1px solid rgba(0,200,255,0.08);
+            position: relative;
+        }
+
+        .game-timer-container::before {
+            content: 'SYSTEM CLOCK';
+            position: absolute;
+            top: -8px; left: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.5em;
+            color: rgba(0,200,255,0.3);
+            letter-spacing: 3px;
+            background: rgba(5,8,25,0.9);
+            padding: 0 8px;
+        }
+
+        .game-timer {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2em;
+            font-weight: 700;
+            color: #00ffc8;
+            background: rgba(0,255,200,0.04);
+            padding: 8px 24px;
+            border-radius: 2px;
+            min-width: 110px;
+            text-align: center;
+            border: 1px solid rgba(0,255,200,0.1);
+            text-shadow: 0 0 20px rgba(0,255,200,0.3);
+            letter-spacing: 3px;
+        }
+
+        .game-timer.warning {
+            color: #ffaa00;
+            background: rgba(255,170,0,0.06);
+            border-color: rgba(255,170,0,0.2);
+            text-shadow: 0 0 20px rgba(255,170,0,0.3);
+            animation: timerPulse 0.8s infinite;
+        }
+
+        .game-timer.danger {
+            color: #ff3344;
+            background: rgba(255,50,70,0.06);
+            border-color: rgba(255,50,70,0.25);
+            text-shadow: 0 0 25px rgba(255,50,70,0.4);
+            animation: timerPulse 0.35s infinite;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .zone-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.65em;
+            color: rgba(0,200,255,0.35);
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .sequence-zone { margin-bottom: 10px; }
+
+        .game-card > p {
+            color: rgba(0,200,255,0.35);
+            font-family: 'Exo 2', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.4em; }
+            .games-grid { grid-template-columns: 1fr; }
+            .two-column-game { grid-template-columns: 1fr; }
+            .score-board { flex-direction: column; gap: 10px; }
+            .celebration { font-size: 1.2em; padding: 30px 35px; }
+            .game-selector-card { min-width: 170px; padding: 16px 18px; font-size: 0.85em; }
+            .dice { width: 110px; height: 110px; font-size: 2.5em; }
+            .game-card { padding: 20px 15px; }
+            .warp-indicator { display: none; }
+            header { clip-path: none; }
+        }
+
+        /* ==================== SCROLLBAR ==================== */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(5,8,25,0.8); }
+        ::-webkit-scrollbar-thumb { background: rgba(0,255,200,0.15); border-radius: 0; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,255,200,0.3); }
+    </style>
+</head>
+<body>
+    <canvas id="spaceCanvas"></canvas>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="hud-top"></div>
+    <div class="hud-bottom"></div>
+
+    <div class="warp-indicator">
+        <div>WARP SPEED</div>
+        <div class="speed" id="warpSpeed">1.0x</div>
+        <div style="margin-top:4px; font-size:0.85em;">SECTOR 7G</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>🚀 AI SPACE ACADEMY</h1>
+            <p>Navigate the cosmos of intelligent automation</p>
+            <div class="score-board">
+                <div class="score-item">
+                    🎯 MISSIONS: <span id="totalScore">0</span>/<span id="totalGames">0</span>
+                </div>
+                <div class="score-item">
+                    ⚡ WARP BONUS: <span id="timeBonus">0</span> PTS
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </header>
+
+        <!-- Dice Rolling Section -->
+        <div class="dice-section" id="diceSection">
+            <div class="dice-instruction">🎲 LAUNCH SEQUENCE INITIATED</div>
+            <p>Engage the hyperdrive to select your missions</p>
+            <div class="dice-container">
+                <div class="dice" id="dice" onclick="rollDice()">
+                    <span id="diceNumber">🎲</span>
+                </div>
+            </div>
+            <div class="selected-games" id="selectedGamesText"></div>
+            <div class="game-selector-cards" id="gameSelectorCards"></div>
+        </div>
+
+        <div class="games-grid" id="gamesGrid" style="display: none;">
+            <!-- Game 1 -->
+            <div class="game-card" id="gameCard1">
+                <div class="corner-br"></div>
+                <div class="game-header">
+                    <div class="game-title">MISSION 1: AI WORKFLOW SEQUENCE</div>
+                    <div class="game-status" id="game1-status"></div>
+                </div>
+                <p style="margin-bottom: 15px;">Arrange the steps in the correct order:</p>
+                <div class="cards-container" id="game1-cards"></div>
+                <div class="sequence-zone">
+                    <div class="zone-label">⬇ Deploy modules in sequence</div>
+                    <div class="drop-zone" id="game1-drop" data-game="1"></div>
+                </div>
+                <div class="button-group">
+                    <button onclick="checkAnswer(1)">✓ VERIFY</button>
+                    <button class="reset-btn" onclick="resetGame(1)">↻ RESET</button>
+                </div>
+                <div class="feedback" id="game1-feedback"></div>
+            </div>
+
+            <!-- Game 2 -->
+            <div class="game-card" id="gameCard2">
+                <div class="corner-br"></div>
+                <div class="game-header">
+                    <div class="game-title">MISSION 2: TRADITIONAL vs INTELLIGENT</div>
+                    <div class="game-status" id="game2-status"></div>
+                </div>
+                <p style="margin-bottom: 15px;">Sort items into the correct category:</p>
+                <div class="cards-container" id="game2-cards"></div>
+                <div class="two-column-game">
+                    <div class="column">
+                        <div class="column-title">📋 TRADITIONAL AUTOMATION</div>
+                        <div class="column-drop-zone" id="game2-drop-traditional" data-game="2" data-category="traditional"></div>
+                    </div>
+                    <div class="column">
+                        <div class="column-title">🧠 INTELLIGENT AUTOMATION</div>
+                        <div class="column-drop-zone" id="game2-drop-intelligent" data-game="2" data-category="intelligent"></div>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button onclick="checkAnswer(2)">✓ VERIFY</button>
+                    <button class="reset-btn" onclick="resetGame(2)">↻ RESET</button>
+                </div>
+                <div class="feedback" id="game2-feedback"></div>
+            </div>
+
+            <!-- Game 3 -->
+            <div class="game-card" id="gameCard3">
+                <div class="corner-br"></div>
+                <div class="game-header">
+                    <div class="game-title">MISSION 3: GENAI REQUEST LIFECYCLE</div>
+                    <div class="game-status" id="game3-status"></div>
+                </div>
+                <p style="margin-bottom: 15px;">Arrange the GenAI request steps in order:</p>
+                <div class="cards-container" id="game3-cards"></div>
+                <div class="sequence-zone">
+                    <div class="zone-label">⬇ Deploy modules in sequence</div>
+                    <div class="drop-zone" id="game3-drop" data-game="3"></div>
+                </div>
+                <div class="button-group">
+                    <button onclick="checkAnswer(3)">✓ VERIFY</button>
+                    <button class="reset-btn" onclick="resetGame(3)">↻ RESET</button>
+                </div>
+                <div class="feedback" id="game3-feedback"></div>
+            </div>
+
+            <!-- Game 4 -->
+            <div class="game-card" id="gameCard4">
+                <div class="corner-br"></div>
+                <div class="game-header">
+                    <div class="game-title">MISSION 4: AI FAILURE HANDLING</div>
+                    <div class="game-status" id="game4-status"></div>
+                </div>
+                <p style="margin-bottom: 15px;">Arrange fallback steps when AI confidence is low:</p>
+                <div class="cards-container" id="game4-cards"></div>
+                <div class="sequence-zone">
+                    <div class="zone-label">⬇ Deploy modules in sequence</div>
+                    <div class="drop-zone" id="game4-drop" data-game="4"></div>
+                </div>
+                <div class="button-group">
+                    <button onclick="checkAnswer(4)">✓ VERIFY</button>
+                    <button class="reset-btn" onclick="resetGame(4)">↻ RESET</button>
+                </div>
+                <div class="feedback" id="game4-feedback"></div>
+            </div>
+
+            <!-- Game 5 -->
+            <div class="game-card" id="gameCard5">
+                <div class="corner-br"></div>
+                <div class="game-header">
+                    <div class="game-title">MISSION 5: GENAI READINESS PRIORITY</div>
+                    <div class="game-status" id="game5-status"></div>
+                </div>
+                <p style="margin-bottom: 15px;">Order the implementation priorities correctly:</p>
+                <div class="cards-container" id="game5-cards"></div>
+                <div class="sequence-zone">
+                    <div class="zone-label">⬇ Deploy modules (highest → lowest priority)</div>
+                    <div class="drop-zone" id="game5-drop" data-game="5"></div>
+                </div>
+                <div class="button-group">
+                    <button onclick="checkAnswer(5)">✓ VERIFY</button>
+                    <button class="reset-btn" onclick="resetGame(5)">↻ RESET</button>
+                </div>
+                <div class="feedback" id="game5-feedback"></div>
+            </div>
+        </div>
+
+        <div class="global-controls">
+            <button id="globalBackBtn" onclick="globalBackAction()">🎲 ENGAGE HYPERDRIVE</button>
+        </div>
+    </div>
+
+    <div class="celebration" id="celebration">
+        🏆 MISSION ACCOMPLISHED 🏆<br>
+        You've mastered AI workflows!
+    </div>
+
+    <!-- Question Modal -->
+    <div class="question-modal" id="questionModal">
+        <div class="question-content">
+            <div class="question-header">
+                <div class="question-title" id="questionTitle">Question 1/5</div>
+            </div>
+            <div class="question-text" id="questionText"></div>
+            <div class="options-container" id="optionsContainer"></div>
+            <div class="question-feedback" id="questionFeedback"></div>
+            <button class="next-question-btn" id="nextQuestionBtn" onclick="nextQuestion()" style="display: none;">NEXT MISSION →</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== SPACE BACKGROUND ENGINE ====================
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+        let W, H;
+        let stars = [];
+        let dustParticles = [];
+        let shootingStars = [];
+        let warpFactor = 1;
+        let targetWarp = 1;
+        let mouseX = 0.5, mouseY = 0.5;
+
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', () => {
+            resize();
+            initStars();
+            initDust();
+        });
+        resize();
+
+        document.addEventListener('mousemove', e => {
+            mouseX = e.clientX / W;
+            mouseY = e.clientY / H;
+        });
+
+        class Star {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * W - W / 2;
+                this.y = Math.random() * H - H / 2;
+                this.z = Math.random() * 1500 + 1;
+                this.pz = this.z;
+                const types = [
+                    [180,200,255],[255,240,220],[200,220,255],
+                    [255,200,200],[180,255,220],[220,200,255],[0,255,200]
+                ];
+                this.color = types[Math.floor(Math.random() * types.length)];
+            }
+            update(speed) {
+                this.pz = this.z;
+                this.z -= speed;
+                if (this.z < 1) { this.reset(); this.z = 1500; this.pz = this.z; }
+            }
+            draw() {
+                const cx = W / 2, cy = H / 2;
+                const ox = (mouseX - 0.5) * 60;
+                const oy = (mouseY - 0.5) * 60;
+                const sx = (this.x / this.z) * 800 + cx + ox;
+                const sy = (this.y / this.z) * 800 + cy + oy;
+                const px = (this.x / this.pz) * 800 + cx + ox;
+                const py = (this.y / this.pz) * 800 + cy + oy;
+                if (sx < -10 || sx > W + 10 || sy < -10 || sy > H + 10) return;
+                const size = Math.max(0.2, (1 - this.z / 1500) * 3);
+                const alpha = Math.max(0.1, (1 - this.z / 1500));
+                const [r, g, b] = this.color;
+                if (warpFactor > 2) {
+                    ctx.beginPath();
+                    ctx.moveTo(px, py);
+                    ctx.lineTo(sx, sy);
+                    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.7})`;
+                    ctx.lineWidth = size * 0.8;
+                    ctx.stroke();
+                }
+                ctx.beginPath();
+                ctx.arc(sx, sy, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+                ctx.fill();
+                if (size > 1.5) {
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, size * 3, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.08})`;
+                    ctx.fill();
+                }
+            }
+        }
+
+        class Dust {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * W;
+                this.y = Math.random() * H;
+                this.size = Math.random() * 1.5 + 0.3;
+                this.sx = (Math.random() - 0.5) * 0.3;
+                this.sy = (Math.random() - 0.5) * 0.2;
+                this.alpha = Math.random() * 0.15 + 0.02;
+                this.color = Math.random() > 0.5 ? [0,200,255] : [120,50,255];
+            }
+            update() {
+                this.x += this.sx * warpFactor;
+                this.y += this.sy * warpFactor;
+                if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
+            }
+            draw() {
+                const [r, g, b] = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        class ShootingStar {
+            constructor() { this.reset(); this.active = true; }
+            reset() {
+                this.x = Math.random() * W * 0.8;
+                this.y = Math.random() * H * 0.4;
+                this.len = Math.random() * 100 + 50;
+                this.speed = Math.random() * 10 + 6;
+                this.angle = Math.PI / 5 + (Math.random() - 0.5) * 0.4;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.015 + 0.01;
+                this.w = Math.random() * 1.5 + 0.5;
+            }
+            update() {
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                this.alpha -= this.decay;
+                if (this.alpha <= 0) this.active = false;
+            }
+            draw() {
+                const tx = this.x - Math.cos(this.angle) * this.len;
+                const ty = this.y - Math.sin(this.angle) * this.len;
+                const grad = ctx.createLinearGradient(tx, ty, this.x, this.y);
+                grad.addColorStop(0, `rgba(200,240,255,0)`);
+                grad.addColorStop(1, `rgba(200,240,255,${this.alpha})`);
+                ctx.beginPath();
+                ctx.moveTo(tx, ty);
+                ctx.lineTo(this.x, this.y);
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = this.w;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.w * 2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(200,240,255,${this.alpha * 0.6})`;
+                ctx.fill();
+            }
+        }
+
+        // Nebulae
+        const nebulae = [];
+        for (let i = 0; i < 4; i++) {
+            nebulae.push({
+                x: Math.random() * W, y: Math.random() * H,
+                radius: Math.random() * 350 + 150,
+                r: Math.random() * 50, g: Math.random() * 80 + 100, b: Math.random() * 100 + 155,
+                alpha: Math.random() * 0.025 + 0.008,
+                dx: (Math.random() - 0.5) * 0.12, dy: (Math.random() - 0.5) * 0.08
+            });
+        }
+
+        function initStars() {
+            stars = [];
+            const count = Math.min(800, Math.floor(W * H / 2500));
+            for (let i = 0; i < count; i++) stars.push(new Star());
+        }
+
+        function initDust() {
+            dustParticles = [];
+            for (let i = 0; i < 60; i++) dustParticles.push(new Dust());
+        }
+
+        initStars();
+        initDust();
+
+        let frameCount = 0;
+        function animateSpace() {
+            frameCount++;
+            ctx.fillStyle = 'rgba(0,0,5,1)';
+            ctx.fillRect(0, 0, W, H);
+
+            warpFactor += (targetWarp - warpFactor) * 0.03;
+
+            // Nebulae
+            nebulae.forEach(n => {
+                n.x += n.dx; n.y += n.dy;
+                if (n.x < -n.radius) n.x = W + n.radius;
+                if (n.x > W + n.radius) n.x = -n.radius;
+                if (n.y < -n.radius) n.y = H + n.radius;
+                if (n.y > H + n.radius) n.y = -n.radius;
+                const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.radius);
+                grad.addColorStop(0, `rgba(${n.r},${n.g},${n.b},${n.alpha})`);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.fillRect(n.x - n.radius, n.y - n.radius, n.radius * 2, n.radius * 2);
+            });
+
+            // Stars
+            const speed = 2 * warpFactor;
+            stars.forEach(s => { s.update(speed); s.draw(); });
+
+            // Dust
+            dustParticles.forEach(d => { d.update(); d.draw(); });
+
+            // Shooting stars
+            if (Math.random() < 0.006) shootingStars.push(new ShootingStar());
+            shootingStars = shootingStars.filter(ss => {
+                ss.update();
+                if (ss.active) ss.draw();
+                return ss.active;
+            });
+
+            // Warp tunnel
+            if (warpFactor > 3) {
+                const cx = W / 2, cy = H / 2;
+                const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.5);
+                grad.addColorStop(0, `rgba(0,255,200,${(warpFactor - 3) * 0.01})`);
+                grad.addColorStop(0.3, `rgba(0,100,255,${(warpFactor - 3) * 0.005})`);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            if (frameCount % 10 === 0) {
+                const el = document.getElementById('warpSpeed');
+                if (el) el.textContent = warpFactor.toFixed(1) + 'x';
+            }
+
+            requestAnimationFrame(animateSpace);
+        }
+        animateSpace();
+
+        function setWarp(f) { targetWarp = f; }
+        function warpBurst() { setWarp(12); setTimeout(() => setWarp(1), 1800); }
+
+        // ==================== GAME DATA ====================
+        const gameData = {
+            1: {
+                type: 'sequence',
+                title: 'MISSION 1: AI WORKFLOW SEQUENCE',
+                cards: ['Input', 'OCR', 'Rule Engine', 'AI Decision', 'RPA Action', 'Notification'],
+                correctOrder: ['Input', 'OCR', 'Rule Engine', 'AI Decision', 'RPA Action', 'Notification']
+            },
+            2: {
+                type: 'categorize',
+                title: 'MISSION 2: TRADITIONAL vs INTELLIGENT',
+                cards: [
+                    { text: 'Rule-Based Processing', category: 'traditional' },
+                    { text: 'Predefined Workflows', category: 'traditional' },
+                    { text: 'Machine Learning Models', category: 'intelligent' },
+                    { text: 'Natural Language Processing', category: 'intelligent' },
+                    { text: 'Static Decision Trees', category: 'traditional' },
+                    { text: 'Computer Vision/OCR', category: 'intelligent' },
+                    { text: 'Predictive Analytics', category: 'intelligent' },
+                    { text: 'Fixed If-Then Logic', category: 'traditional' }
+                ]
+            },
+            3: {
+                type: 'sequence',
+                title: 'MISSION 3: GENAI REQUEST LIFECYCLE',
+                cards: ['User Prompt', 'Prompt Engineering', 'LLM Processing', 'Response Generation', 'Post-Processing', 'Logging & Telemetry'],
+                correctOrder: ['User Prompt', 'Prompt Engineering', 'LLM Processing', 'Response Generation', 'Post-Processing', 'Logging & Telemetry']
+            },
+            4: {
+                type: 'sequence',
+                title: 'MISSION 4: AI FAILURE HANDLING',
+                cards: ['AI Prediction', 'Confidence Check', 'Human Review Queue', 'Manual Decision', 'Feedback Loop', 'Model Retraining'],
+                correctOrder: ['AI Prediction', 'Confidence Check', 'Human Review Queue', 'Manual Decision', 'Feedback Loop', 'Model Retraining']
+            },
+            5: {
+                type: 'sequence',
+                title: 'MISSION 5: GENAI READINESS PRIORITY',
+                cards: ['Data Quality', 'Automation', 'AI Model', 'UI'],
+                correctOrder: ['Data Quality', 'Automation', 'AI Model', 'UI']
+            }
+        };
+
+        // ==================== GAME STATE ====================
+        let gameState = {
+            1: { completed: false, correct: false },
+            2: { completed: false, correct: false },
+            3: { completed: false, correct: false },
+            4: { completed: false, correct: false },
+            5: { completed: false, correct: false }
+        };
+
+        let selectedGames = [];
+        let currentGameNumber = null;
+        let gameTimer = null;
+        let gameTimeRemaining = 60;
+        let timeBonusPoints = 0;
+
+        // ==================== INIT ====================
+        window.addEventListener('DOMContentLoaded', () => {
+            setupDropZones();
+        });
+
+        // ==================== DICE ====================
+        function rollDice() {
+            resetAllGameStates();
+            warpBurst();
+
+            const dice = document.getElementById('dice');
+            const diceNumber = document.getElementById('diceNumber');
+            dice.classList.add('rolling');
+
+            let counter = 0;
+            const rollInterval = setInterval(() => {
+                diceNumber.textContent = Math.floor(Math.random() * 5) + 1;
+                counter++;
+                if (counter > 14) {
+                    clearInterval(rollInterval);
+                    const finalNumber = Math.floor(Math.random() * 5) + 1;
+                    diceNumber.textContent = finalNumber;
+                    dice.classList.remove('rolling');
+                    selectRandomGames(finalNumber);
+                }
+            }, 70);
+        }
+
+        function resetAllGameStates() {
+            for (let i = 1; i <= 5; i++) {
+                gameState[i] = { completed: false, correct: false };
+            }
+            timeBonusPoints = 0;
+            selectedGames = [];
+            updateScore();
+        }
+
+        function selectRandomGames(count) {
+            const allGameNumbers = [1, 2, 3, 4, 5];
+            selectedGames = [];
+            const shuffled = allGameNumbers.sort(() => Math.random() - 0.5);
+            selectedGames = shuffled.slice(0, count);
+            selectedGames.sort((a, b) => a - b);
+
+            document.getElementById('selectedGamesText').innerHTML =
+                `<p style="color:#00ffc8; font-size:1.1em; font-family:'Orbitron',sans-serif; letter-spacing:2px;">
+                    ✦ ${count} MISSION${count > 1 ? 'S' : ''} DETECTED ✦
+                </p>
+                <p style="color:rgba(0,200,255,0.4); font-size:0.85em; font-family:'Exo 2',sans-serif; letter-spacing:2px; margin-top:5px;">
+                    SELECT A MISSION TO BEGIN
+                </p>`;
+
+            updateScore();
+            renderGameSelectorCards();
+        }
+
+        function renderGameSelectorCards() {
+            const container = document.getElementById('gameSelectorCards');
+            container.innerHTML = '';
+
+            selectedGames.forEach(gameNum => {
+                const card = document.createElement('div');
+                card.className = 'game-selector-card';
+
+                if (gameState[gameNum].completed) {
+                    card.classList.add('completed');
+                    card.textContent = `${gameData[gameNum].title} ✅`;
+                } else {
+                    card.textContent = gameData[gameNum].title;
+                    card.onclick = () => startGame(gameNum);
+                }
+
+                container.appendChild(card);
+            });
+        }
+
+        // ==================== GAME LIFECYCLE ====================
+        function startGame(gameNum) {
+            if (gameState[gameNum].completed) return;
+
+            currentGameNumber = gameNum;
+            setWarp(3);
+
+            document.getElementById('diceSection').style.display = 'none';
+            document.getElementById('gamesGrid').style.display = 'grid';
+
+            // Hide all game cards, show only selected one
+            for (let i = 1; i <= 5; i++) {
+                const card = document.getElementById(`gameCard${i}`);
+                if (card) card.style.display = 'none';
+            }
+
+            const activeCard = document.getElementById(`gameCard${gameNum}`);
+            if (activeCard) {
+                activeCard.style.display = 'block';
+                activeCard.style.gridColumn = '1 / -1';
+
+                // Add exit button if not present
+                if (!activeCard.querySelector('.exit-game-btn')) {
+                    const exitBtn = document.createElement('button');
+                    exitBtn.className = 'exit-game-btn';
+                    exitBtn.textContent = '✕ ABORT';
+                    exitBtn.onclick = exitGame;
+                    activeCard.insertBefore(exitBtn, activeCard.firstChild);
+                }
+
+                // Add timer if not present
+                if (!activeCard.querySelector('.game-timer-container')) {
+                    const timerDiv = document.createElement('div');
+                    timerDiv.className = 'game-timer-container';
+                    timerDiv.innerHTML = `
+                        <div class="timer-label" style="font-family:'Exo 2',sans-serif; font-size:0.9em; font-weight:600; color:rgba(0,200,255,0.5); letter-spacing:2px; text-transform:uppercase;">⏱️ COUNTDOWN</div>
+                        <div class="game-timer" id="gameTimer">60</div>
+                    `;
+                    const gameHeader = activeCard.querySelector('.game-header');
+                    gameHeader.after(timerDiv);
+                }
+            }
+
+            initializeGame(gameNum);
+            startGameTimer();
+
+            const backBtn = document.getElementById('globalBackBtn');
+            if (backBtn) backBtn.textContent = '🔙 ABORT MISSION';
+        }
+
+        function exitGame() {
+            stopGameTimer();
+            setWarp(1);
+            returnToSelection();
+        }
+
+        function returnToSelection() {
+            stopGameTimer();
+            currentGameNumber = null;
+
+            document.getElementById('gamesGrid').style.display = 'none';
+            document.getElementById('diceSection').style.display = 'block';
+
+            const completedCount = selectedGames.filter(n => gameState[n].completed).length;
+            const remaining = selectedGames.length - completedCount;
+
+            if (remaining > 0) {
+                document.getElementById('selectedGamesText').innerHTML =
+                    `<p style="color:#00ffc8; font-size:1.1em; font-family:'Orbitron',sans-serif; letter-spacing:2px;">
+                        ✦ ${completedCount}/${selectedGames.length} MISSIONS COMPLETE ✦
+                    </p>
+                    <p style="color:rgba(0,200,255,0.4); font-size:0.85em; font-family:'Exo 2',sans-serif; letter-spacing:2px; margin-top:5px;">
+                        SELECT NEXT MISSION
+                    </p>`;
+            } else {
+                document.getElementById('selectedGamesText').innerHTML =
+                    `<p style="color:#00ff88; font-size:1.1em; font-family:'Orbitron',sans-serif; letter-spacing:2px;">
+                        ✦ ALL MISSIONS COMPLETE ✦
+                    </p>`;
+            }
+
+            renderGameSelectorCards();
+            updateScore();
+
+            const backBtn = document.getElementById('globalBackBtn');
+            if (backBtn) backBtn.textContent = '🎲 ENGAGE HYPERDRIVE';
+        }
+
+        function backToDice() {
+            stopGameTimer();
+            currentGameNumber = null;
+            setWarp(1);
+
+            document.getElementById('diceSection').style.display = 'block';
+            document.getElementById('gamesGrid').style.display = 'none';
+
+            const diceNumber = document.getElementById('diceNumber');
+            if (diceNumber) diceNumber.textContent = '🎲';
+            const selectedText = document.getElementById('selectedGamesText');
+            if (selectedText) selectedText.innerHTML = '';
+            const selector = document.getElementById('gameSelectorCards');
+            if (selector) selector.innerHTML = '';
+
+            selectedGames = [];
+            updateScore();
+
+            const backBtn = document.getElementById('globalBackBtn');
+            if (backBtn) backBtn.textContent = '🎲 ENGAGE HYPERDRIVE';
+        }
+
+        function globalBackAction() {
+            const diceSection = document.getElementById('diceSection');
+
+            if (currentGameNumber !== null) {
+                exitGame();
+                return;
+            }
+
+            if (diceSection && diceSection.style.display !== 'none') {
+                rollDice();
+                return;
+            }
+
+            rollDice();
+        }
+
+        // ==================== INITIALIZE GAME ====================
+        function initializeGame(gameNum) {
+            const game = gameData[gameNum];
+            const container = document.getElementById(`game${gameNum}-cards`);
+            container.innerHTML = '';
+
+            if (game.type === 'sequence') {
+                const shuffled = [...game.cards].sort(() => Math.random() - 0.5);
+                shuffled.forEach((cardText, index) => {
+                    const card = createCard(cardText, gameNum, index);
+                    container.appendChild(card);
+                });
+            } else if (game.type === 'categorize') {
+                const shuffled = [...game.cards].sort(() => Math.random() - 0.5);
+                shuffled.forEach((cardData, index) => {
+                    const card = createCard(cardData.text, gameNum, index, cardData.category);
+                    container.appendChild(card);
+                });
+            }
+
+            document.getElementById(`game${gameNum}-status`).textContent = '';
+            document.getElementById(`game${gameNum}-feedback`).textContent = '';
+            document.getElementById(`game${gameNum}-feedback`).className = 'feedback';
+
+            if (game.type === 'sequence') {
+                document.getElementById(`game${gameNum}-drop`).innerHTML = '';
+                document.getElementById(`game${gameNum}-drop`).className = 'drop-zone';
+            } else if (game.type === 'categorize') {
+                document.getElementById(`game${gameNum}-drop-traditional`).innerHTML = '';
+                document.getElementById(`game${gameNum}-drop-intelligent`).innerHTML = '';
+            }
+
+            setupDropZones();
+        }
+
+        // ==================== DRAG & DROP ====================
+        function createCard(text, gameNum, index, category = null) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.draggable = true;
+            card.textContent = text;
+            card.dataset.game = gameNum;
+            card.dataset.text = text;
+            if (category) card.dataset.category = category;
+
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+            card.addEventListener('touchstart', handleTouchStart, { passive: false });
+            card.addEventListener('touchmove', handleTouchMove, { passive: false });
+            card.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+            return card;
+        }
+
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = e.target.closest('.card');
+            if (draggedElement) draggedElement.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', e.target.innerHTML);
+        }
+
+        function handleDragEnd(e) {
+            const c = e.target.closest('.card');
+            if (c) c.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            const target = findDropTarget(e.target);
+            if (target) target.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            const target = findDropTarget(e.target);
+            if (target) target.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            let dropTarget = findDropTarget(e.target);
+            if (dropTarget) dropTarget.classList.remove('drag-over');
+
+            if (draggedElement && dropTarget) {
+                const clone = cloneCard(draggedElement);
+                dropTarget.appendChild(clone);
+                draggedElement.remove();
+            }
+
+            return false;
+        }
+
+        function findDropTarget(el) {
+            while (el && !el.classList.contains('drop-zone') &&
+                   !el.classList.contains('column-drop-zone') &&
+                   !el.classList.contains('cards-container')) {
+                el = el.parentElement;
+            }
+            return el;
+        }
+
+        function cloneCard(original) {
+            const clone = original.cloneNode(true);
+            clone.classList.remove('dragging');
+            clone.addEventListener('dragstart', handleDragStart);
+            clone.addEventListener('dragend', handleDragEnd);
+            clone.addEventListener('touchstart', handleTouchStart, { passive: false });
+            clone.addEventListener('touchmove', handleTouchMove, { passive: false });
+            clone.addEventListener('touchend', handleTouchEnd, { passive: false });
+            return clone;
+        }
+
+        // Touch support
+        let touchDragEl = null, touchClone = null;
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            touchDragEl = e.target.closest('.card');
+            if (!touchDragEl) return;
+            const t = e.touches[0];
+            touchClone = touchDragEl.cloneNode(true);
+            touchClone.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;opacity:0.8;transform:scale(1.05);';
+            touchClone.style.left = (t.clientX - 50) + 'px';
+            touchClone.style.top = (t.clientY - 20) + 'px';
+            document.body.appendChild(touchClone);
+            touchDragEl.classList.add('dragging');
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (!touchClone) return;
+            const t = e.touches[0];
+            touchClone.style.left = (t.clientX - 50) + 'px';
+            touchClone.style.top = (t.clientY - 20) + 'px';
+        }
+
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            if (!touchDragEl || !touchClone) return;
+            const t = e.changedTouches[0];
+            touchClone.remove();
+            touchClone = null;
+            const dropTarget = findDropTarget(document.elementFromPoint(t.clientX, t.clientY));
+            if (dropTarget) {
+                dropTarget.appendChild(cloneCard(touchDragEl));
+                touchDragEl.remove();
+            }
+            if (touchDragEl) touchDragEl.classList.remove('dragging');
+            touchDragEl = null;
+        }
+
+        function setupDropZones() {
+            const dropZones = document.querySelectorAll('.drop-zone, .column-drop-zone, .cards-container');
+            dropZones.forEach(zone => {
+                const newZone = zone.cloneNode(true);
+                zone.parentNode.replaceChild(newZone, zone);
+            });
+
+            document.querySelectorAll('.drop-zone, .column-drop-zone, .cards-container').forEach(zone => {
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('dragenter', handleDragEnter);
+                zone.addEventListener('dragleave', handleDragLeave);
+                zone.addEventListener('drop', handleDrop);
+            });
+
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+                card.addEventListener('touchstart', handleTouchStart, { passive: false });
+                card.addEventListener('touchmove', handleTouchMove, { passive: false });
+                card.addEventListener('touchend', handleTouchEnd, { passive: false });
+            });
+        }
+
+        // ==================== CHECK ANSWER ====================
+        function checkAnswer(gameNum) {
+            const game = gameData[gameNum];
+            const feedback = document.getElementById(`game${gameNum}-feedback`);
+            let isCorrect = false;
+
+            if (game.type === 'sequence') {
+                const dropZone = document.getElementById(`game${gameNum}-drop`);
+                const cards = Array.from(dropZone.querySelectorAll('.card'));
+                const userOrder = cards.map(card => card.dataset.text);
+
+                isCorrect = JSON.stringify(userOrder) === JSON.stringify(game.correctOrder);
+
+                if (isCorrect) {
+                    dropZone.classList.add('correct');
+                    dropZone.classList.remove('incorrect');
+                    feedback.textContent = '✅ MISSION COMPLETE — Sequence verified!';
+                    feedback.className = 'feedback success';
+                    document.getElementById(`game${gameNum}-status`).textContent = '✅';
+                    handleGameWin(gameNum);
+                } else {
+                    dropZone.classList.add('incorrect');
+                    dropZone.classList.remove('correct');
+                    feedback.textContent = '❌ SEQUENCE ERROR — Recalibrate and try again!';
+                    feedback.className = 'feedback error';
+                    document.getElementById(`game${gameNum}-status`).textContent = '❌';
+                }
+            } else if (game.type === 'categorize') {
+                const traditionalZone = document.getElementById(`game${gameNum}-drop-traditional`);
+                const intelligentZone = document.getElementById(`game${gameNum}-drop-intelligent`);
+
+                const traditionalCards = Array.from(traditionalZone.querySelectorAll('.card'));
+                const intelligentCards = Array.from(intelligentZone.querySelectorAll('.card'));
+
+                const traditionalCorrect = traditionalCards.every(card => card.dataset.category === 'traditional');
+                const intelligentCorrect = intelligentCards.every(card => card.dataset.category === 'intelligent');
+                const allPlaced = traditionalCards.length + intelligentCards.length === game.cards.length;
+
+                isCorrect = traditionalCorrect && intelligentCorrect && allPlaced;
+
+                if (isCorrect) {
+                    feedback.textContent = '✅ MISSION COMPLETE — Classification verified!';
+                    feedback.className = 'feedback success';
+                    document.getElementById(`game${gameNum}-status`).textContent = '✅';
+                    handleGameWin(gameNum);
+                } else {
+                    if (!allPlaced) {
+                        feedback.textContent = '❌ INCOMPLETE — Deploy all modules first!';
+                    } else {
+                        feedback.textContent = '❌ CLASSIFICATION ERROR — Some modules misaligned!';
+                    }
+                    feedback.className = 'feedback error';
+                    document.getElementById(`game${gameNum}-status`).textContent = '❌';
+                }
+            }
+        }
+
+        function handleGameWin(gameNum) {
+            stopGameTimer();
+            setWarp(6);
+            setTimeout(() => setWarp(1), 1500);
+
+            const timeBonus = gameTimeRemaining * 2;
+            timeBonusPoints += timeBonus;
+
+            gameState[gameNum].completed = true;
+            gameState[gameNum].correct = true;
+            updateScore();
+
+            const allDone = selectedGames.every(n => gameState[n].completed);
+
+            if (allDone) {
+                setTimeout(() => showCelebration(), 1500);
+            } else {
+                setTimeout(() => returnToSelection(), 2000);
+            }
+        }
+
+        // ==================== RESET ====================
+        function resetGame(gameNum) {
+            initializeGame(gameNum);
+        }
+
+        function resetCurrentGame() {
+            if (currentGameNumber) {
+                resetGame(currentGameNumber);
+            }
+        }
+
+        // ==================== TIMER ====================
+        function startGameTimer() {
+            stopGameTimer();
+            gameTimeRemaining = 60;
+            updateGameTimer();
+            gameTimer = setInterval(() => {
+                gameTimeRemaining--;
+                updateGameTimer();
+                if (gameTimeRemaining <= 0) {
+                    stopGameTimer();
+                    gameTimeUp();
+                }
+            }, 1000);
+        }
+
+        function stopGameTimer() {
+            if (gameTimer) {
+                clearInterval(gameTimer);
+                gameTimer = null;
+            }
+        }
+
+        function updateGameTimer() {
+            const timerElement = document.getElementById('gameTimer');
+            if (timerElement) {
+                timerElement.textContent = gameTimeRemaining;
+                timerElement.className = 'game-timer';
+                if (gameTimeRemaining <= 10) {
+                    timerElement.classList.add('danger');
+                } else if (gameTimeRemaining <= 20) {
+                    timerElement.classList.add('warning');
+                }
+            }
+        }
+
+        function gameTimeUp() {
+            if (currentGameNumber) {
+                const feedback = document.getElementById(`game${currentGameNumber}-feedback`);
+                if (feedback) {
+                    feedback.textContent = '⏰ TIME EXPIRED — Reset or abort mission, Commander!';
+                    feedback.className = 'feedback error';
+                }
+            }
+        }
+
+        // ==================== SCORE ====================
+        function updateScore() {
+            let completedCount = 0;
+            selectedGames.forEach(num => {
+                if (gameState[num].completed) completedCount++;
+            });
+
+            document.getElementById('totalScore').textContent = completedCount;
+            document.getElementById('totalGames').textContent = selectedGames.length;
+            document.getElementById('timeBonus').textContent = timeBonusPoints;
+
+            const progress = selectedGames.length > 0 ? (completedCount / selectedGames.length) * 100 : 0;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // ==================== CELEBRATION ====================
+        function showCelebration() {
+            warpBurst();
+            const celebration = document.getElementById('celebration');
+            celebration.innerHTML = `
+                🏆 MISSION ACCOMPLISHED 🏆<br>
+                <span style="font-size:0.55em; color:rgba(0,200,255,0.6);">All ${selectedGames.length} missions completed</span><br>
+                <span style="font-size:0.45em; color:#00ffc8;">⚡ WARP BONUS: ${timeBonusPoints} PTS</span>
+            `;
+            celebration.classList.add('show');
+
+            setTimeout(() => {
+                celebration.classList.remove('show');
+                backToDice();
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
