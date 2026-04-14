@@ -302,35 +302,44 @@
         /* ==================== DROP ZONES ==================== */
         .drop-zone {
             background: rgba(0,200,255,0.02);
-            border: 1px dashed rgba(0,200,255,0.15);
-            border-radius: 2px;
-            padding: 16px;
-            min-height: 120px;
+            border: 2px dashed rgba(0,200,255,0.2);
+            border-radius: 4px;
+            padding: 20px;
+            min-height: 140px;
             margin-bottom: 15px;
             transition: all 0.3s ease;
             position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-content: flex-start;
         }
 
         .drop-zone::before {
-            content: '[ DROP ZONE ]';
+            content: '📥 TAP CARD THEN TAP HERE TO DROP';
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%,-50%);
             font-family: 'Orbitron', sans-serif;
-            font-size: 0.6em;
-            color: rgba(0,200,255,0.12);
-            letter-spacing: 4px;
+            font-size: 0.55em;
+            color: rgba(0,200,255,0.2);
+            letter-spacing: 2px;
             pointer-events: none;
+            text-align: center;
+            width: 90%;
         }
 
         .drop-zone:not(:empty)::before {
             display: none;
         }
 
-        .drop-zone.drag-over {
-            background: rgba(0,255,200,0.05);
-            border-color: rgba(0,255,200,0.35);
-            box-shadow: 0 0 30px rgba(0,255,200,0.08), inset 0 0 30px rgba(0,255,200,0.02);
+        .drop-zone.drag-over,
+        .drop-zone.touch-active {
+            background: rgba(0,255,200,0.08);
+            border-color: rgba(0,255,200,0.5);
+            border-style: solid;
+            box-shadow: 0 0 30px rgba(0,255,200,0.12), inset 0 0 40px rgba(0,255,200,0.04);
+            transform: scale(1.01);
         }
 
         .drop-zone.correct {
@@ -358,46 +367,86 @@
         .cards-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 20px;
-            padding: 16px;
-            background: rgba(0,200,255,0.02);
-            border-radius: 2px;
-            min-height: 80px;
-            border: 1px solid rgba(0,200,255,0.06);
+            padding: 20px;
+            background: rgba(0,200,255,0.03);
+            border-radius: 4px;
+            min-height: 100px;
+            border: 2px solid rgba(0,200,255,0.1);
             position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .cards-container.touch-active {
+            background: rgba(0,255,200,0.06);
+            border-color: rgba(0,255,200,0.3);
         }
 
         .cards-container::before {
-            content: 'AVAILABLE MODULES';
+            content: '📦 AVAILABLE MODULES';
             position: absolute;
-            top: -8px; left: 12px;
+            top: -10px; left: 12px;
             font-family: 'Orbitron', sans-serif;
             font-size: 0.5em;
-            color: rgba(0,200,255,0.25);
+            color: rgba(0,200,255,0.35);
             letter-spacing: 3px;
             background: rgba(5,8,25,0.9);
-            padding: 0 8px;
+            padding: 2px 10px;
         }
 
         /* ==================== DRAGGABLE CARDS ==================== */
         .card {
-            background: linear-gradient(135deg, rgba(0,255,200,0.08), rgba(0,150,255,0.06));
+            background: linear-gradient(135deg, rgba(0,255,200,0.1), rgba(0,150,255,0.08));
             color: #b0e0ff;
-            padding: 12px 18px;
-            border-radius: 2px;
+            padding: 16px 22px;
+            border-radius: 4px;
             cursor: grab;
             user-select: none;
             font-weight: 600;
             font-family: 'Exo 2', sans-serif;
-            box-shadow: 0 2px 10px rgba(0,200,255,0.08);
+            box-shadow: 0 3px 15px rgba(0,200,255,0.1);
             transition: all 0.25s ease;
-            font-size: 0.95em;
+            font-size: 1em;
             display: inline-block;
             text-align: center;
-            border: 1px solid rgba(0,200,255,0.12);
+            border: 2px solid rgba(0,200,255,0.15);
             letter-spacing: 0.5px;
             position: relative;
+            min-height: 48px;
+            touch-action: none;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(0,200,255,0.3);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .card.selected {
+            background: linear-gradient(135deg, rgba(0,255,200,0.2), rgba(0,150,255,0.15));
+            border-color: rgba(0,255,200,0.6);
+            box-shadow: 0 0 25px rgba(0,255,200,0.2), 0 6px 20px rgba(0,255,200,0.15);
+            transform: translateY(-4px) scale(1.02);
+            color: #ffffff;
+        }
+
+        .card.selected::after {
+            opacity: 1;
+            background: #00ffc8;
+            animation: selectedPulse 1s infinite;
+        }
+
+        @keyframes selectedPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.5; }
         }
 
         .card:hover {
@@ -408,11 +457,28 @@
             background: linear-gradient(135deg, rgba(0,255,200,0.12), rgba(0,150,255,0.1));
         }
 
-        .card:active { cursor: grabbing; }
+        .card:active { 
+            cursor: grabbing;
+            transform: scale(0.98);
+        }
 
         .card.dragging {
             opacity: 0.3;
             transform: scale(0.9);
+        }
+
+        /* Touch feedback */
+        @media (hover: none) and (pointer: coarse) {
+            .card {
+                padding: 18px 24px;
+                font-size: 1.05em;
+                min-height: 52px;
+            }
+            
+            .card:active {
+                transform: scale(0.95);
+                background: linear-gradient(135deg, rgba(0,255,200,0.15), rgba(0,150,255,0.12));
+            }
         }
 
         /* ==================== TWO COLUMN ==================== */
@@ -424,41 +490,64 @@
 
         .column {
             background: rgba(0,200,255,0.02);
-            padding: 15px;
-            border-radius: 2px;
-            border: 1px solid rgba(0,200,255,0.06);
+            padding: 18px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,200,255,0.08);
         }
 
         .column-title {
             font-family: 'Orbitron', sans-serif;
             font-weight: 600;
             font-size: 0.85em;
-            margin-bottom: 10px;
-            color: rgba(0,200,255,0.6);
+            margin-bottom: 12px;
+            color: rgba(0,200,255,0.7);
             text-align: center;
-            padding: 10px;
-            background: rgba(0,200,255,0.04);
-            border-radius: 2px;
-            border: 1px solid rgba(0,200,255,0.08);
+            padding: 12px;
+            background: rgba(0,200,255,0.05);
+            border-radius: 4px;
+            border: 1px solid rgba(0,200,255,0.1);
             letter-spacing: 1px;
+        }
+
+        @media (max-width: 768px) {
+            .two-column-game {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .column {
+                padding: 15px;
+            }
+            
+            .column-title {
+                font-size: 0.8em;
+                padding: 10px;
+            }
+            
+            .column-drop-zone {
+                min-height: 150px;
+            }
         }
 
         .column-drop-zone {
             background: rgba(0,200,255,0.02);
-            border: 1px dashed rgba(0,200,255,0.12);
-            border-radius: 2px;
-            padding: 15px;
-            min-height: 200px;
+            border: 2px dashed rgba(0,200,255,0.15);
+            border-radius: 4px;
+            padding: 18px;
+            min-height: 220px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             transition: all 0.3s ease;
         }
 
-        .column-drop-zone.drag-over {
-            background: rgba(0,255,200,0.04);
-            border-color: rgba(0,255,200,0.3);
-            box-shadow: 0 0 25px rgba(0,255,200,0.06);
+        .column-drop-zone.drag-over,
+        .column-drop-zone.touch-active {
+            background: rgba(0,255,200,0.06);
+            border-color: rgba(0,255,200,0.4);
+            border-style: solid;
+            box-shadow: 0 0 25px rgba(0,255,200,0.1);
+            transform: scale(1.01);
         }
 
         /* ==================== BUTTONS ==================== */
@@ -467,6 +556,7 @@
             gap: 12px;
             justify-content: center;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
 
         button {
@@ -474,8 +564,8 @@
             background: rgba(0,255,200,0.06);
             color: #00ffc8;
             border: 1px solid rgba(0,255,200,0.2);
-            padding: 12px 30px;
-            border-radius: 2px;
+            padding: 14px 32px;
+            border-radius: 4px;
             font-size: 0.8em;
             font-weight: 700;
             cursor: pointer;
@@ -485,6 +575,8 @@
             text-transform: uppercase;
             position: relative;
             overflow: hidden;
+            min-height: 48px;
+            touch-action: manipulation;
         }
 
         button::before {
@@ -506,7 +598,9 @@
             background: rgba(0,255,200,0.1);
         }
 
-        button:active { transform: translateY(0); }
+        button:active { 
+            transform: translateY(0) scale(0.98);
+        }
 
         button.reset-btn {
             color: #ff6688;
@@ -739,8 +833,8 @@
         .game-selector-card {
             background: rgba(0,255,200,0.04);
             color: rgba(180,240,255,0.8);
-            padding: 20px 28px;
-            border-radius: 2px;
+            padding: 22px 30px;
+            border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
             font-size: 1em;
@@ -749,17 +843,22 @@
             transition: all 0.3s ease;
             min-width: 220px;
             text-align: center;
-            border: 1px solid rgba(0,255,200,0.12);
+            border: 2px solid rgba(0,255,200,0.12);
             letter-spacing: 0.5px;
             position: relative;
             overflow: hidden;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
         }
 
         .game-selector-card::before {
             content: '';
             position: absolute;
             top: 0; left: 0;
-            width: 3px; height: 100%;
+            width: 4px; height: 100%;
             background: linear-gradient(180deg, #00ffc8, transparent);
             opacity: 0;
             transition: opacity 0.3s;
@@ -772,6 +871,10 @@
             box-shadow: 0 0 30px rgba(0,255,200,0.12);
             border-color: rgba(0,255,200,0.3);
             color: #ffffff;
+        }
+
+        .game-selector-card:active:not(.completed) {
+            transform: scale(0.98);
         }
 
         .game-selector-card.completed {
@@ -790,6 +893,20 @@
             opacity: 0.5;
             cursor: not-allowed;
             filter: grayscale(0.5);
+        }
+
+        @media (max-width: 768px) {
+            .game-selector-card {
+                min-width: 100%;
+                padding: 18px 22px;
+                font-size: 0.9em;
+            }
+            
+            .game-selector-cards {
+                flex-direction: column;
+                width: 100%;
+                padding: 0 10px;
+            }
         }
 
         /* ==================== QUESTION MODAL ==================== */
@@ -1027,6 +1144,113 @@
             .game-card { padding: 20px 15px; }
             .warp-indicator { display: none; }
             header { clip-path: none; }
+            
+            /* Touch-friendly cards on mobile */
+            .card {
+                padding: 16px 20px;
+                font-size: 0.95em;
+                min-height: 50px;
+            }
+            
+            .cards-container {
+                gap: 10px;
+                padding: 18px 15px;
+            }
+            
+            .drop-zone {
+                min-height: 130px;
+                padding: 18px 15px;
+            }
+            
+            .column-drop-zone {
+                min-height: 180px;
+            }
+        }
+
+        /* Tablet specific adjustments */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .games-grid { 
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 18px 24px;
+                font-size: 1.05em;
+            }
+            
+            .drop-zone {
+                min-height: 150px;
+                padding: 22px;
+            }
+            
+            .cards-container {
+                gap: 14px;
+                padding: 22px;
+            }
+            
+            .column-drop-zone {
+                min-height: 230px;
+                padding: 20px;
+            }
+        }
+
+        /* Touch device specific styles */
+        @media (hover: none) and (pointer: coarse) {
+            .card {
+                padding: 18px 24px;
+                min-height: 54px;
+                font-size: 1em;
+            }
+            
+            .drop-zone::before {
+                content: '👆 TAP CARD, THEN TAP HERE';
+                font-size: 0.6em;
+            }
+            
+            .cards-container::before {
+                content: '👆 TAP TO SELECT A CARD';
+            }
+            
+            /* Larger touch targets */
+            button {
+                padding: 16px 32px;
+                font-size: 0.85em;
+            }
+            
+            .game-selector-card {
+                padding: 22px 28px;
+                min-width: 200px;
+            }
+        }
+
+        /* Touch instruction banner */
+        .touch-instruction {
+            display: none;
+            background: rgba(0,255,200,0.08);
+            border: 1px solid rgba(0,255,200,0.2);
+            border-radius: 4px;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            font-family: 'Exo 2', sans-serif;
+            font-size: 0.9em;
+            color: #00ffc8;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .touch-instruction.visible {
+            display: block;
+            animation: fadeInSlide 0.3s ease;
+        }
+
+        @keyframes fadeInSlide {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .touch-instruction .selected-card-name {
+            font-weight: 700;
+            color: #ffffff;
         }
 
         /* ==================== SCROLLBAR ==================== */
@@ -1623,6 +1847,7 @@
         function exitGame() {
             stopGameTimer();
             setWarp(1);
+            deselectCard(); // Clear any selected card
             returnToSelection();
         }
 
@@ -1743,14 +1968,127 @@
 
             card.addEventListener('dragstart', handleDragStart);
             card.addEventListener('dragend', handleDragEnd);
+            
+            // Enhanced touch support - tap to select
             card.addEventListener('touchstart', handleTouchStart, { passive: false });
             card.addEventListener('touchmove', handleTouchMove, { passive: false });
             card.addEventListener('touchend', handleTouchEnd, { passive: false });
+            
+            // Click/tap to select for touch devices
+            card.addEventListener('click', handleCardClick);
 
             return card;
         }
 
         let draggedElement = null;
+        let selectedCard = null; // For tap-to-select mode
+        let isTouchDevice = false;
+        let touchStartTime = 0;
+        let touchStartPos = { x: 0, y: 0 };
+        let isTouchDragging = false;
+
+        // Detect touch device
+        function detectTouchDevice() {
+            isTouchDevice = ('ontouchstart' in window) || 
+                           (navigator.maxTouchPoints > 0) || 
+                           (navigator.msMaxTouchPoints > 0);
+            return isTouchDevice;
+        }
+        detectTouchDevice();
+
+        // Handle card click for tap-to-select mode
+        function handleCardClick(e) {
+            // Don't handle if we just finished a drag
+            if (isTouchDragging) {
+                isTouchDragging = false;
+                return;
+            }
+            
+            const card = e.target.closest('.card');
+            if (!card) return;
+            
+            // If same card is clicked, deselect it
+            if (selectedCard === card) {
+                deselectCard();
+                return;
+            }
+            
+            // Deselect previous card
+            if (selectedCard) {
+                selectedCard.classList.remove('selected');
+            }
+            
+            // Select new card
+            selectedCard = card;
+            card.classList.add('selected');
+            
+            // Show instruction
+            showTouchInstruction(card.dataset.text);
+            
+            // Highlight valid drop zones
+            highlightDropZones(true);
+        }
+
+        function deselectCard() {
+            if (selectedCard) {
+                selectedCard.classList.remove('selected');
+                selectedCard = null;
+            }
+            hideTouchInstruction();
+            highlightDropZones(false);
+        }
+
+        function showTouchInstruction(cardName) {
+            let instruction = document.getElementById('touchInstruction');
+            if (!instruction) {
+                instruction = document.createElement('div');
+                instruction.id = 'touchInstruction';
+                instruction.className = 'touch-instruction';
+            }
+            
+            instruction.innerHTML = `👆 Now tap a drop zone to place: <span class="selected-card-name">${cardName}</span>`;
+            instruction.classList.add('visible');
+            
+            // Insert at the top of the active game card
+            if (currentGameNumber) {
+                const gameCard = document.getElementById(`gameCard${currentGameNumber}`);
+                const header = gameCard.querySelector('.game-header');
+                if (header && !document.getElementById('touchInstruction')) {
+                    header.after(instruction);
+                }
+            }
+        }
+
+        function hideTouchInstruction() {
+            const instruction = document.getElementById('touchInstruction');
+            if (instruction) {
+                instruction.classList.remove('visible');
+            }
+        }
+
+        function highlightDropZones(highlight) {
+            const zones = document.querySelectorAll('.drop-zone, .column-drop-zone, .cards-container');
+            zones.forEach(zone => {
+                if (highlight) {
+                    zone.classList.add('touch-active');
+                } else {
+                    zone.classList.remove('touch-active');
+                }
+            });
+        }
+
+        // Handle drop zone click for tap-to-drop
+        function handleDropZoneClick(e) {
+            if (!selectedCard) return;
+            
+            let dropTarget = findDropTarget(e.target);
+            if (dropTarget && dropTarget !== selectedCard.parentElement) {
+                const clone = cloneCard(selectedCard);
+                dropTarget.appendChild(clone);
+                selectedCard.remove();
+                deselectCard();
+            }
+        }
 
         function handleDragStart(e) {
             draggedElement = e.target.closest('.card');
@@ -1808,50 +2146,130 @@
         function cloneCard(original) {
             const clone = original.cloneNode(true);
             clone.classList.remove('dragging');
+            clone.classList.remove('selected');
             clone.addEventListener('dragstart', handleDragStart);
             clone.addEventListener('dragend', handleDragEnd);
             clone.addEventListener('touchstart', handleTouchStart, { passive: false });
             clone.addEventListener('touchmove', handleTouchMove, { passive: false });
             clone.addEventListener('touchend', handleTouchEnd, { passive: false });
+            clone.addEventListener('click', handleCardClick);
             return clone;
         }
 
-        // Touch support
+        // Touch support - improved for tablets
         let touchDragEl = null, touchClone = null;
+        const TOUCH_DRAG_THRESHOLD = 15; // pixels to move before considered a drag
 
         function handleTouchStart(e) {
-            e.preventDefault();
-            touchDragEl = e.target.closest('.card');
-            if (!touchDragEl) return;
+            const card = e.target.closest('.card');
+            if (!card) return;
+            
+            touchDragEl = card;
+            touchStartTime = Date.now();
             const t = e.touches[0];
-            touchClone = touchDragEl.cloneNode(true);
-            touchClone.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;opacity:0.8;transform:scale(1.05);';
-            touchClone.style.left = (t.clientX - 50) + 'px';
-            touchClone.style.top = (t.clientY - 20) + 'px';
-            document.body.appendChild(touchClone);
-            touchDragEl.classList.add('dragging');
+            touchStartPos = { x: t.clientX, y: t.clientY };
+            isTouchDragging = false;
+            
+            // Visual feedback
+            card.style.transition = 'none';
         }
 
         function handleTouchMove(e) {
-            e.preventDefault();
-            if (!touchClone) return;
+            if (!touchDragEl) return;
+            
             const t = e.touches[0];
-            touchClone.style.left = (t.clientX - 50) + 'px';
-            touchClone.style.top = (t.clientY - 20) + 'px';
+            const dx = Math.abs(t.clientX - touchStartPos.x);
+            const dy = Math.abs(t.clientY - touchStartPos.y);
+            
+            // Only start drag if moved beyond threshold
+            if (dx > TOUCH_DRAG_THRESHOLD || dy > TOUCH_DRAG_THRESHOLD) {
+                e.preventDefault();
+                isTouchDragging = true;
+                
+                // Deselect any selected card when dragging
+                if (selectedCard && selectedCard !== touchDragEl) {
+                    deselectCard();
+                }
+                
+                // Create visual clone if not exists
+                if (!touchClone) {
+                    touchClone = touchDragEl.cloneNode(true);
+                    touchClone.style.cssText = `
+                        position: fixed;
+                        z-index: 9999;
+                        pointer-events: none;
+                        opacity: 0.9;
+                        transform: scale(1.08);
+                        box-shadow: 0 10px 40px rgba(0,255,200,0.3);
+                        border: 2px solid rgba(0,255,200,0.5);
+                        transition: none;
+                    `;
+                    document.body.appendChild(touchClone);
+                    touchDragEl.classList.add('dragging');
+                    
+                    // Highlight drop zones
+                    highlightDropZones(true);
+                }
+                
+                // Move clone
+                const cardWidth = touchDragEl.offsetWidth || 100;
+                const cardHeight = touchDragEl.offsetHeight || 40;
+                touchClone.style.left = (t.clientX - cardWidth / 2) + 'px';
+                touchClone.style.top = (t.clientY - cardHeight / 2) + 'px';
+                
+                // Highlight drop zone under finger
+                updateDropZoneHighlight(t.clientX, t.clientY);
+            }
+        }
+
+        function updateDropZoneHighlight(x, y) {
+            // Remove all drag-over states
+            document.querySelectorAll('.drop-zone, .column-drop-zone, .cards-container').forEach(zone => {
+                zone.classList.remove('drag-over');
+            });
+            
+            // Add drag-over to zone under finger
+            const elementUnder = document.elementFromPoint(x, y);
+            const dropTarget = findDropTarget(elementUnder);
+            if (dropTarget) {
+                dropTarget.classList.add('drag-over');
+            }
         }
 
         function handleTouchEnd(e) {
-            e.preventDefault();
-            if (!touchDragEl || !touchClone) return;
-            const t = e.changedTouches[0];
-            touchClone.remove();
-            touchClone = null;
-            const dropTarget = findDropTarget(document.elementFromPoint(t.clientX, t.clientY));
-            if (dropTarget) {
-                dropTarget.appendChild(cloneCard(touchDragEl));
-                touchDragEl.remove();
+            const card = touchDragEl;
+            
+            if (touchClone) {
+                // Dragging mode - drop the card
+                e.preventDefault();
+                const t = e.changedTouches[0];
+                touchClone.remove();
+                touchClone = null;
+                
+                // Find drop target
+                const dropTarget = findDropTarget(document.elementFromPoint(t.clientX, t.clientY));
+                
+                if (dropTarget && card) {
+                    dropTarget.appendChild(cloneCard(card));
+                    card.remove();
+                }
+                
+                // Clean up
+                if (card) {
+                    card.classList.remove('dragging');
+                    card.style.transition = '';
+                }
+                
+                // Remove highlights
+                highlightDropZones(false);
+                document.querySelectorAll('.drop-zone, .column-drop-zone, .cards-container').forEach(zone => {
+                    zone.classList.remove('drag-over');
+                });
+            } else if (card) {
+                // Tap mode - let click handler manage it
+                card.style.transition = '';
             }
-            if (touchDragEl) touchDragEl.classList.remove('dragging');
+            
             touchDragEl = null;
         }
 
@@ -1867,6 +2285,9 @@
                 zone.addEventListener('dragenter', handleDragEnter);
                 zone.addEventListener('dragleave', handleDragLeave);
                 zone.addEventListener('drop', handleDrop);
+                
+                // Add click handler for tap-to-drop
+                zone.addEventListener('click', handleDropZoneClick);
             });
 
             document.querySelectorAll('.card').forEach(card => {
@@ -1875,6 +2296,7 @@
                 card.addEventListener('touchstart', handleTouchStart, { passive: false });
                 card.addEventListener('touchmove', handleTouchMove, { passive: false });
                 card.addEventListener('touchend', handleTouchEnd, { passive: false });
+                card.addEventListener('click', handleCardClick);
             });
         }
 
@@ -1958,6 +2380,7 @@
 
         // ==================== RESET ====================
         function resetGame(gameNum) {
+            deselectCard(); // Clear any selected card
             initializeGame(gameNum);
         }
 
